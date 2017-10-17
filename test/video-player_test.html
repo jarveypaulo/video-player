@@ -128,7 +128,7 @@
           if(videoPlayer.isReady) {
             done();
           } else {
-            videoPlayer.addEventListener('ready', () => done(), true);
+            videoPlayer.addEventListener('ready', () => flush(done), true);
           }
         });
 
