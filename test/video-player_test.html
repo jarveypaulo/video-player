@@ -123,18 +123,22 @@
             window.localStorage.clear();
           }
           videoPlayer = fixture('complex-video-player-fixture');
-          // Start things off with a flush so that all DOM elements are
-          // ready at the beginning of each test.
-          flush(function(){
-            done();
-          });
+
+          // Wait for player to be loaded completely so that all DOM elements
+          // are ready at the beginning of each test.
+          let flushDone = () => flush(() => done());
+          if(videoPlayer.isReady) {
+            flush(done);
+          } else {
+            videoPlayer.addEventListener('ready', () => flush(done), true);
+          }
         });
 
         test('testing the setup of a complex video player with three streams', function(done) {
           assert.isNotNull(videoPlayer.configuration, 'there is a configuration');
           // Testing whether all stateManager values are at their set value
           assert.equal(videoPlayer.state.position, 0, 'position value is at default');
-          assert.equal(videoPlayer.state.duration, 0, 'duration value is at default');
+          assert.approximately(videoPlayer.state.duration, 32, 0.5, 'duration value is at duration of video');
           assert.equal(videoPlayer.state.playbackRate, 1.3, 'playback rate value is at set value');
           assert.equal(videoPlayer.state.volume, 0.75, 'volume value is at set value');
           assert.equal(videoPlayer.state.muted, false, 'muted value is at default');
@@ -157,12 +161,8 @@
         });
 
         test('testing videotime display', function(done){
-          videoPlayer.addEventListener('ready', function() {
-            flush(function() {
-              assert.equal(videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("videotime-display")[0].shadowRoot.querySelectorAll("#container__videotime_display")[0].innerText, '00:00 / 00:31', 'video time display is at zero in the beginning and contains the correct length of the video');
-              done();
-            });
-          }, true);
+          assert.equal(videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("videotime-display")[0].shadowRoot.querySelectorAll("#container__videotime_display")[0].innerText, '00:00 / 00:31', 'video time display is at zero in the beginning and contains the correct length of the video');
+          done();
         });
 
         test('testing captions', function(done) {
@@ -181,7 +181,7 @@
           });
         });
 
-        test('testing interactive transcripts', function(done){
+        test('testing interactive transcripts', function(done) {
           assert.equal(videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("interactive-transcript-control")[0].shadowRoot.querySelectorAll("select-control")[0].shadowRoot.querySelectorAll("#dropdown__select [name]").length, 4, "Test whether we have three interactive transcript languages available, plus one 'off' switch");
           assert.equal(videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("interactive-transcript-control")[0].shadowRoot.querySelectorAll("select-control")[0].shadowRoot.querySelectorAll("#dropdown__select [name]").length,
           videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("caption-control")[0].shadowRoot.querySelectorAll("select-control")[0].shadowRoot.querySelectorAll("#dropdown__select [name]").length, "Test whether we have as much interactive transcript languages available as caption languages");
@@ -223,18 +223,14 @@
         });
 
         test('testing playlist-chapter-list-switch', function(done) {
-          videoPlayer.addEventListener('ready', function() {
-            flush(function() {
-              assert.equal(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].shadowRoot.querySelectorAll("#container__playlist_chapter_list .list_item:not(.sublist_item)").length, 3, "Test whether we have three playlist entries available");
-              assert.equal(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].shadowRoot.querySelectorAll("#container__playlist_chapter_list .list_item.sublist_item").length, 2, "Test whether we have two chapters available");
-              assert.include(Array.from(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].classList), "-hidden", "chapter list is hidden by default");
-              videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("playlist-chapter-list-switch")[0].shadowRoot.querySelectorAll("#button__chapter_list")[0].click();
-              assert.notInclude(Array.from(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].classList), "-hidden", 'chapter list is not hidden anymore after activating it');
-              videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].shadowRoot.querySelectorAll("#container__playlist_chapter_list .list_item.sublist_item a")[1].click();
-              assert.equal(videoPlayer.state.position, 15, 'position value is at value of second chapter');
-              done();
-            });
-          }, true);
+          assert.equal(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].shadowRoot.querySelectorAll("#container__playlist_chapter_list .list_item:not(.sublist_item)").length, 3, "Test whether we have three playlist entries available");
+          assert.equal(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].shadowRoot.querySelectorAll("#container__playlist_chapter_list .list_item.sublist_item").length, 2, "Test whether we have two chapters available");
+          assert.include(Array.from(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].classList), "-hidden", "chapter list is hidden by default");
+          videoPlayer.shadowRoot.querySelectorAll("control-bar")[0].shadowRoot.querySelectorAll("playlist-chapter-list-switch")[0].shadowRoot.querySelectorAll("#button__chapter_list")[0].click();
+          assert.notInclude(Array.from(videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].classList), "-hidden", 'chapter list is not hidden anymore after activating it');
+          videoPlayer.shadowRoot.querySelectorAll("playlist-chapter-list")[0].shadowRoot.querySelectorAll("#container__playlist_chapter_list .list_item.sublist_item a")[1].click();
+          assert.equal(videoPlayer.state.position, 15, 'position value is at value of second chapter');
+          done();
         });
 
         test('testing stream switch control', function(done){
@@ -366,7 +362,6 @@
           });
           done();
         });
-
       });
     </script>
 
