@@ -9,6 +9,7 @@ branches:
   only:
   - master
   - dev
+  - travis-test
   - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
 before_install:
