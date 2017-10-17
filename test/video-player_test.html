@@ -110,8 +110,6 @@
       // These numbers can rear their ugly heads at us during testing with
       // slower hardware than the one the tests were written on.
       suite('video-player', function(){
-        this.timeout(20000);
-
         let videoPlayer;
 
         setup(function(done) {
@@ -127,11 +125,10 @@
 
           // Wait for player to be loaded completely so that all DOM elements
           // are ready at the beginning of each test.
-          let flushDone = () => flush(() => done());
           if(videoPlayer.isReady) {
-            flush(done);
+            done();
           } else {
-            videoPlayer.addEventListener('ready', () => flush(done), true);
+            videoPlayer.addEventListener('ready', () => done(), true);
           }
         });
 
