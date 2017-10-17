@@ -110,6 +110,7 @@
       // These numbers can rear their ugly heads at us during testing with
       // slower hardware than the one the tests were written on.
       suite('video-player', function(){
+        this.timeout(20000);
 
         let videoPlayer;
 
